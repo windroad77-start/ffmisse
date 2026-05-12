@@ -11,6 +11,7 @@ REQUIRED_PACKAGES = [
     ("beautifulsoup4", "bs4"),
     ("lxml", "lxml"),
     ("PySocks", "socks"),
+    ("Pillow", "PIL"),
 ]
 
 
@@ -38,7 +39,7 @@ _ensure_requirements()
 
 setting = {
     "filepath": __file__,
-    "use_db": True,
+    "use_db": False,
     "use_default_setting": True,
     "home_module": "main",
     "menu": {
