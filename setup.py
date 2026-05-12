@@ -43,7 +43,7 @@ setting = {
     "home_module": "main",
     "menu": {
         "uri": runtime_package_name,
-        "name": "MissKon",
+        "name": "FFMisse",
         "list": [
             {"uri": "main", "name": "최신"},
             {"uri": "top3", "name": "인기 (3일)"},

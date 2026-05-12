@@ -6,19 +6,19 @@ import urllib.parse
 from flask import Response, jsonify, render_template, request, stream_with_context
 from plugin import PluginModuleBase, default_route_socketio_module
 
-from .logic_misskon import LogicMissKon
+from .logic_ffmisse import LogicFFMisse
 
 
 class ModuleMain(PluginModuleBase):
-    template_prefix = "ff_misskon"
+    template_prefix = "ffmisse"
 
     def __init__(self, P):
         super(ModuleMain, self).__init__(P, name="main")
         self.db_default = {
-            "misskon_url": LogicMissKon.BASE_URL,
+            "ffmisse_url": LogicFFMisse.BASE_URL,
             "proxy_url": "",
             "proxy_enabled": "True",
-            "download_path": os.path.join(os.getcwd(), "downloads", "ff_misskon"),
+            "download_path": os.path.join(os.getcwd(), "downloads", "ffmisse"),
         }
         self.menu = {
             "main": "최신",
@@ -60,7 +60,7 @@ class ModuleMain(PluginModuleBase):
             return render_template(f"{self.template_prefix}_setting.html", arg=arg)
         if sub == "log":
             return render_template("log.html", package=self.P.package_name)
-        return render_template("sample.html", title=f"MissKon - {sub}")
+        return render_template("sample.html", title=f"FFMisse - {sub}")
 
     def process_ajax(self, sub, req):
         try:
@@ -69,8 +69,8 @@ class ModuleMain(PluginModuleBase):
                 return jsonify(ret)
 
             if sub == "discover_url":
-                discovered_url = LogicMissKon.discover_url()
-                self._set_setting("misskon_url", discovered_url)
+                discovered_url = LogicFFMisse.discover_url()
+                self._set_setting("ffmisse_url", discovered_url)
                 return jsonify({"ret": "success", "url": discovered_url})
 
             if sub == "list":
@@ -78,7 +78,7 @@ class ModuleMain(PluginModuleBase):
                 search = req.form.get("search", "")
                 category = req.form.get("category", "")
                 base_url = self._get_effective_base_url()
-                data = LogicMissKon.get_list(
+                data = LogicFFMisse.get_list(
                     base_url=base_url, page=page, search=search, category=category
                 )
                 if self.P.ModelSetting.get_bool("proxy_enabled"):
@@ -89,7 +89,7 @@ class ModuleMain(PluginModuleBase):
 
             if sub == "detail":
                 url = req.form.get("url")
-                data = LogicMissKon.get_detail(url)
+                data = LogicFFMisse.get_detail(url)
                 if data:
                     if self.P.ModelSetting.get_bool("proxy_enabled"):
                         data["proxy_images"] = [
@@ -104,7 +104,7 @@ class ModuleMain(PluginModuleBase):
                 target_path = self.P.ModelSetting.get("download_path")
 
                 if not force:
-                    data = LogicMissKon.get_detail(url)
+                    data = LogicFFMisse.get_detail(url)
                     if data:
                         safe_title = self._safe_filename(data["title"])
                         zip_file_path = os.path.join(target_path, f"{safe_title}.zip")
@@ -141,8 +141,8 @@ class ModuleMain(PluginModuleBase):
             except Exception:
                 Image = None
 
-            self.P.logger.info(f"[MissKon] Download Task Started: {url}")
-            data = LogicMissKon.get_detail(url)
+            self.P.logger.info(f"[FFMisse] Download Task Started: {url}")
+            data = LogicFFMisse.get_detail(url)
             if not data:
                 self.download_status[url] = {"status": "error", "msg": "상세 정보 로딩 실패"}
                 return
@@ -154,14 +154,14 @@ class ModuleMain(PluginModuleBase):
             if not os.path.exists(temp_folder):
                 os.makedirs(temp_folder)
 
-            session = LogicMissKon.get_session()
+            session = LogicFFMisse.get_session()
             total = len(data["images"])
             self.download_status[url] = {"current": 0, "total": total, "status": "downloading"}
             downloaded_files = []
 
             for idx, img_url in enumerate(data["images"]):
                 try:
-                    res = session.get(img_url, headers=LogicMissKon.HEADERS, timeout=30)
+                    res = session.get(img_url, headers=LogicFFMisse.HEADERS, timeout=30)
                     if res.status_code == 200:
                         file_path = os.path.join(temp_folder, f"{idx + 1:03d}.jpg")
                         if Image and not img_url.lower().endswith(".gif"):
@@ -184,14 +184,14 @@ class ModuleMain(PluginModuleBase):
                         zipf.write(file_path, os.path.basename(file_path))
                 shutil.rmtree(temp_folder)
                 self.download_status[url]["status"] = "completed"
-                self.P.logger.info(f"[MissKon] Download & Zip Completed: {zip_file_path}")
+                self.P.logger.info(f"[FFMisse] Download & Zip Completed: {zip_file_path}")
             else:
                 self.download_status[url]["status"] = "error"
                 if os.path.exists(temp_folder):
                     shutil.rmtree(temp_folder)
         except Exception as e:
             self.download_status[url] = {"status": "error", "msg": str(e)}
-            self.P.logger.error(f"[MissKon] Download thread failed: {e}")
+            self.P.logger.error(f"[FFMisse] Download thread failed: {e}")
             self.P.logger.error(traceback.format_exc())
 
     def process_normal(self, sub, req):
@@ -203,10 +203,10 @@ class ModuleMain(PluginModuleBase):
         return f"/{self.P.package_name}/normal/proxy?url={urllib.parse.quote(target)}"
 
     def _get_effective_base_url(self):
-        base_url = self.P.ModelSetting.get("misskon_url") or LogicMissKon.BASE_URL
-        if not LogicMissKon.is_supported_base_url(base_url):
-            discovered_url = LogicMissKon.discover_url()
-            self._set_setting("misskon_url", discovered_url)
+        base_url = self.P.ModelSetting.get("ffmisse_url") or LogicFFMisse.BASE_URL
+        if not LogicFFMisse.is_supported_base_url(base_url):
+            discovered_url = LogicFFMisse.discover_url()
+            self._set_setting("ffmisse_url", discovered_url)
             return discovered_url
         return base_url.rstrip("/")
 
@@ -250,11 +250,11 @@ class ModuleMain(PluginModuleBase):
             return "No URL", 400
         headers = {
             "User-Agent": "Mozilla/5.0",
-            "Referer": self.P.ModelSetting.get("misskon_url") or LogicMissKon.BASE_URL,
+            "Referer": self.P.ModelSetting.get("ffmisse_url") or LogicFFMisse.BASE_URL,
         }
 
         try:
-            session = LogicMissKon.get_session()
+            session = LogicFFMisse.get_session()
             res = session.get(target_url, headers=headers, stream=True, timeout=10)
             if not res or res.status_code >= 400:
                 return "Target Error", res.status_code if res else 500
@@ -274,7 +274,7 @@ class ModuleMain(PluginModuleBase):
             response.headers["Cache-Control"] = "public, max-age=604800"
             return response
         except Exception as e:
-            self.P.logger.error(f"[MissKon] Image Proxy Exception: {e} ({target_url})")
+            self.P.logger.error(f"[FFMisse] Image Proxy Exception: {e} ({target_url})")
             return str(e), 500
 
     def _safe_filename(self, name):

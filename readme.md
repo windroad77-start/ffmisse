@@ -1,6 +1,6 @@
-# ff_misskon (MissKon FlaskFarm Plugin)
+# ffmisse (FFMisse FlaskFarm Plugin)
 
-MissKon.com 사이트의 고화질 화보 및 영상을 편리하게 감상하고, 단 한 번의 클릭으로 소장할 수 있는 FlaskFarm 전용 플러그인입니다. (`ff_4khd` 기반)
+FFMisse.com 사이트의 고화질 화보 및 영상을 편리하게 감상하고, 단 한 번의 클릭으로 소장할 수 있는 FlaskFarm 전용 플러그인입니다. (`ff_4khd` 기반)
 
 ## 🌟 주요 기능
 
@@ -26,7 +26,7 @@ MissKon.com 사이트의 고화질 화보 및 영상을 편리하게 감상하�
 
 ## ⚙️ 설정 방법
 
-1.  **사이트 주소**: 현재 접속 가능한 MissKon 도메인을 입력합니다. (예: `https://misskon.com`)
+1.  **사이트 주소**: 현재 접속 가능한 FFMisse 도메인을 입력합니다. (예: `https://misskon.com`)
 2.  **이미지 프록시**: 이미지 로딩이 원활하지 않거나 엑스박스가 뜰 경우 활성화합니다.
 3.  **다운로드 경로**: 화보 ZIP 파일이 저장될 서버의 로컬 경로를 설정합니다.
 
