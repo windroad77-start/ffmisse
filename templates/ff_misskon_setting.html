@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+<div>
+  {{ macros.m_button_group([['global_setting_save_btn', '저장'], ['global_one_execute_btn', '주소 갱신']]) }}
+  <hr>
+  <form id="setting">
+    <div class="tab-content">
+      <div class="alert alert-primary">
+        <i class="fa fa-info-circle"></i>
+        MissKon 접속 주소를 설정합니다. 자동 탐색을 원하시면 주소 갱신 버튼을 눌러주세요. (기본: <code>https://misskon.com</code>)
+      </div>
+      {{ macros.setting_input_text('misskon_url', '사이트 주소', value=arg['misskon_url']) }}
+      {{ macros.setting_input_text('proxy_url', '프록시 주소', value=arg['proxy_url'], desc='misskon.com 접속이 차단된 경우 프록시 서버 주소를 입력하세요. (예: http://proxy-ip:port)') }}
+      {{ macros.setting_input_text('download_path', '다운로드 경로', value=arg['download_path']) }}
+      {{ macros.setting_checkbox('proxy_enabled', '이미지 프록시 사용', value=arg['proxy_enabled']) }}
+    </div>
+  </form>
+</div>
+
+<script type="text/javascript">
+const package_name = "{{ arg['package_name'] }}";
+
+function settingFormData() {
+    const data = $('#setting').serializeArray();
+    if (!data.some(item => item.name === 'proxy_enabled')) {
+        data.push({ name: 'proxy_enabled', value: 'False' });
+    }
+    return $.param(data);
+}
+
+$(document).ready(function(){
+    $(document).on('click', '#global_setting_save_btn', function(e){
+        e.preventDefault();
+
+        $.ajax({
+            url: '/' + package_name + '/ajax/setting_save',
+            type: 'POST',
+            data: settingFormData(),
+            success: function (data) {
+                if (data) {
+                    $.notify('<strong>저장되었습니다.</strong>', {type: 'success'});
+                } else {
+                    $.notify('<strong>저장 실패.</strong>', {type: 'warning'});
+                }
+            },
+            error: function() {
+                $.notify('<strong>서버 에러.</strong>', {type: 'danger'});
+            }
+        });
+    });
+
+    $(document).on('click', '#global_one_execute_btn', function(e){
+        e.preventDefault();
+        const btn = $(this);
+        btn.prop('disabled', true);
+
+        $.ajax({
+            url: '/' + package_name + '/ajax/discover_url',
+            type: 'POST',
+            success: function (data) {
+                if (data && data.ret === 'success') {
+                    $('[name="misskon_url"]').val(data.url);
+                    $.notify('<strong>주소 갱신 완료:</strong> ' + data.url, {type: 'success'});
+                } else {
+                    $.notify('<strong>주소 갱신 실패.</strong>', {type: 'warning'});
+                }
+            },
+            error: function() {
+                $.notify('<strong>서버 에러.</strong>', {type: 'danger'});
+            },
+            complete: function() {
+                btn.prop('disabled', false);
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

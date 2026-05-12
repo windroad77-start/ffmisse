@@ -1,0 +1,47 @@
+{% extends "ff_misskon_main.html" %}
+{% block content %}
+{{ super() }}
+<script type="text/javascript">
+$(document).ready(function(){
+    const searchBar = `
+        <div class="row p-3 bg-light border-bottom mb-3">
+            <div class="col-md-8 offset-md-2 d-flex">
+                <input id="search_word" class="form-control mr-2" type="text" placeholder="검색어 입력">
+                <button id="search_btn" class="btn btn-primary px-4">검색</button>
+            </div>
+        </div>
+    `;
+    $(".container-fluid").prepend(searchBar);
+    $("#main_title").closest(".row").hide();
+    $("#list_div").empty();
+    $("#pagination_container").attr('style', 'display:none !important;');
+    $("#search_btn").click(function(){ searchPosts(1); });
+    $("#search_word").keyup(function(e){ if(e.keyCode == 13) searchPosts(1); });
+});
+
+function searchPosts(page) {
+    const word = $("#search_word").val();
+    if (!word) return;
+    currentPage = page;
+    $("#page_info").text(page + " 페이지");
+    $("#list_div").html('<div class="col-12 text-center p-5"><h4>검색 중...</h4></div>');
+    $("#pagination_container").attr('style', 'display:none !important;');
+    window.scrollTo(0, 0);
+    $.ajax({
+        url: '/' + package_name + '/ajax/list',
+        type: 'POST',
+        data: { page: page, search: word },
+        success: function(data) {
+            if (data.ret == 'success' && data.data.length > 0) {
+                renderList(data.data);
+                $("#pagination_container").attr('style', 'display:flex !important;');
+            } else {
+                $("#list_div").html('<div class="col-12 text-center p-5"><h4>검색 결과가 없습니다.</h4></div>');
+            }
+        }
+    });
+}
+
+loadPosts = searchPosts;
+</script>
+{% endblock %}
